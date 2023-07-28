@@ -75,7 +75,7 @@
 
 <!-- Тут состояние -->
 {#if !noSteps || win}
-  <p>{statuses[+win]} {names[player]}</p>
+  <p>{statuses[+!!win]} {names[player]}</p>
 {:else}
   <p>Ничья</p>
 {/if}
