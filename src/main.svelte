@@ -1,123 +1,99 @@
 <script lang="ts">
+  import { names, statuses } from "config";
+  import { checkWin } from "lib/checkWin";
+  import { getFreeRow } from "lib/getFreeRow";
+  import { getRows } from "lib/getRows";
   import { beforeUpdate } from "svelte";
 
+  // Хранилище всей карты в числах
+  // 0 - Пустая ячейка
+  // 1 - Первый игрок
+  // 2 - Второй игрок
   const map = new Uint8Array(9);
-  const names = ["игрок", "компьютер"];
-  const statuses = ["Сейчас ходит", "Победил"];
-  const wins = [
-    [0, 1, 2],
-    [3, 4, 5],
-    [6, 7, 8],
 
-    [0, 3, 6],
-    [1, 4, 7],
-    [2, 5, 8],
+  let player = 0; // Текущий игрок 0 или 1
+  let steps = 0; // Количество шагов
+  let win: number[] | undefined; // Выиграшная строка
 
-    [0, 4, 8],
-    [2, 4, 6],
-  ];
+  // True, если больше ходить нельзя
+  $: noSteps = steps === 9;
 
-  let player = 0;
-  let steps = 0;
-  let win = false;
-  let winRow: number[] = [];
-
-  $: noSteps = steps !== 9;
-
-  function checkWin() {
-    for (const row of wins) {
-      const [a, b, c] = row;
-      if (map[a] && map[a] === map[b] && map[a] === map[c]) {
-        winRow = row;
-        return true;
-      }
-    }
-
-    return false;
-  }
-
-  function sort() {
-    wins.sort(() => (Math.random() > 0.5 ? 1 : -1));
-  }
-
-  function getFreeRow() {
-    sort();
-
-    return wins.find((row) => {
-      return row.findIndex((c) => !map[c]) !== -1;
-    });
-  }
-
-  function getRows(player: number, count: number) {
-    sort();
-
-    return wins.find((row) => {
-      let cv = 0;
-
-      for (const c of row) {
-        if (map[c] === player) cv++;
-        if (map[c] && map[c] !== player) cv--;
-      }
-
-      return cv === count;
-    });
-  }
-
+  // Функция хода ИИ
   function aiStep() {
-    const step = (getRows(2, 2) ?? getRows(1, 2) ?? getFreeRow()).find(
-      (e) => !map[e]
-    );
+    const step = (
+      getRows(map, 2, 2) ?? // Вышиграшная строка или
+      getRows(map, 1, 2) ?? // Строка, чтобы не проиграть или
+      getFreeRow(map)
+    ) // Рандомная строка с пустым полем
+      .find((e) => !map[e]); // И в ней я ищу именно пустую ячейку
 
-    select(step, 1);
+    // Делается ход ИИ если ячейка найдена
+    if (typeof step === "number") {
+      select(step, 1);
+    }
   }
 
+  // Функция хода. Первый аргумент ячейка. Второй, не обязательный, игрок.
   function select(n: number, pl = 0) {
-    if (map[n] || win || player !== pl) return;
-
-    map[n] = player + 1;
-    steps++;
-
-    if (checkWin()) {
-      win = true;
+    // Если на карте что-то есть, или есть выигрыш, или игрок не тот
+    if (map[n] || win || player !== pl) {
       return;
     }
 
-    player = +!player;
+    steps++; // Добаляем количество шагов в игре
+    map[n] = player + 1; // Устанавливаем нужное значение на карту
+
+    // Ищем выиграшную строку
+    if ((win = checkWin(map))) {
+      return;
+    }
+
+    player = +!player; // Меняем игрока
   }
 
+  // Тут всё просто сбрасываем в начало
   function reset() {
-    win = false;
-    winRow = [];
-    steps = 0;
-    player = 0;
+    win = undefined; // Удаляем строку
+    steps = 0; // Удаляем шаги
+    player = 0; // Ставим первого игрока
 
-    for (let i = 0; i < map.length; i++) map[i] = 0;
+    // Чистим карту
+    for (let i = 0; i < map.length; i++) {
+      map[i] = 0;
+    }
   }
 
+  // Перед каждым обновлением компонента выполняется функция
   beforeUpdate(() => {
-    if (player === 1 && !win && noSteps) {
+    // Если выбран второй игрок и нет выигрыша и есть доступные шаги
+    if (player === 1 && !win && !noSteps) {
+      // Через задержку выполняем aiStep
       setTimeout(aiStep, Math.random() * 1000 + 500);
     }
   });
 </script>
 
-{#if noSteps || win}
+<!-- Тут состояние -->
+{#if !noSteps || win}
   <p>{statuses[+win]} {names[player]}</p>
 {:else}
   <p>Ничья</p>
 {/if}
 
+<!-- Тут карта с кликами и состоянеием -->
 <div class="map">
   {#each map as val, i}
     <div
       class="item"
       on:mousedown={() => select(i)}
-      data-win={winRow.includes(i)}
+      data-win={win?.includes(i)}
       data-val={val}
     />
   {/each}
 </div>
 
+<!-- Кнопка перезагрузки -->
 <button on:mousedown={reset}>Перезапуск</button>
 
+<!-- Ссылка на гитхаб -->
 <a href="https://github.com/vicimpa/tic-tac-svelte">GitHub</a>
