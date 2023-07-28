@@ -2,7 +2,7 @@
 
 ## Ага, на Svelte
 
-Онлайн демо [тут](https://vicimpa.gitgub.io/tic-tac-svelte)
+Онлайн демо [тут](https://vicimpa.github.io/tic-tac-svelte)
 
 ## Для запуска
 
