@@ -119,3 +119,5 @@
 </div>
 
 <button on:mousedown={reset}>Перезапуск</button>
+
+<a href="https://github.com/vicimpa/tic-tac-svelte">GitHub</a>
