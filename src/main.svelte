@@ -14,6 +14,7 @@
   ];
 
   let player = 0;
+  let steps = 0;
   let win = false;
 
   function checkWin() {
@@ -26,9 +27,10 @@
   }
 
   function select(n: number) {
-    if(map[n]) return
-    if(win) return
+    if(map[n] || win) return
+
     map[n] = player + 1;
+    steps++;
 
     if(checkWin()) {
       win = true;
@@ -40,6 +42,7 @@
 
   function reset() {
     win = false;
+    steps = 0;
     player = 0;
     
     for(let i = 0; i < map.length; i++)
@@ -47,7 +50,12 @@
   }
 </script>
 
-<p>{win ? 'Победил игрок' : 'Сейчас ходит'} {player + 1}</p>
+{#if steps !== 9 || win }
+  <p>{win ? 'Победил игрок' : 'Сейчас ходит'} {player + 1}</p>
+{:else}
+  <p>Ничья</p>
+{/if}
+
 
 <div class="map">
   {#each map as val, i}

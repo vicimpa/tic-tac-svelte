@@ -18,11 +18,13 @@ body {
 :root {
   --size: 100px;
 }
+
 #app {
   display: flex;
   flex-direction: column;
   gap: 20px;
 }
+
 .map {
   padding: 10px;
   gap: 10px;
