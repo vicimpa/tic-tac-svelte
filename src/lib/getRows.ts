@@ -9,7 +9,7 @@ export function getRows(map: Uint8Array, player: number, count: number) {
 
     for (const c of row) {
       if (map[c] === player) cv++;
-      if (map[c] && map[c] !== player) cv--;
+      if (map[c] && map[c] !== player) return false;
     }
 
     return cv === count;
