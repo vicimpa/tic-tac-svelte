@@ -3,6 +3,7 @@
   import { checkWin } from "lib/checkWin";
   import { getFreeRow } from "lib/getFreeRow";
   import { getRows } from "lib/getRows";
+  import { sort } from "lib/sort";
   import { beforeUpdate } from "svelte";
 
   // Хранилище всей карты в числах
@@ -11,7 +12,9 @@
   // 2 - Второй игрок
   const map = new Uint8Array(9);
 
-  let player = 0; // Текущий игрок 0 или 1
+  let fPlayer = 0; // Кто ходит первым
+
+  let player = fPlayer; // Текущий игрок 0 или 1
   let steps = 0; // Количество шагов
   let win: number[] | undefined; // Выиграшная строка
   let wait = 3; // Ожидание
@@ -21,13 +24,15 @@
 
   // Функция хода ИИ
   function aiStep() {
-    const step = (
+    const row = (
       getRows(map, 2, 2) ?? // Вышиграшная строка, или
       getRows(map, 1, 2) ?? // Строка, чтобы не проиграть, или
       getRows(map, 2, 1) ?? // Строка, где уже есть наша позиция, или
       getFreeRow(map)
     ) // Рандомная строка с пустым полем
-      .find((e) => !map[e]); // И в ней я ищу именно пустую ячейку
+      .filter((e) => !map[e]); // И в ней я ищу именно пустые ячейки
+
+    const step = sort(row)[0];
 
     // Делается ход ИИ если ячейка найдена
     if (typeof step === "number") {
@@ -57,7 +62,7 @@
   function reset() {
     win = undefined; // Удаляем строку
     steps = 0; // Удаляем шаги
-    player = 0; // Ставим первого игрока
+    player = fPlayer; // Ставим первого игрока
     wait = 3; // Ставим ожидание на 3
 
     // Чистим карту
@@ -81,7 +86,7 @@
     // Если выбран второй игрок и нет выигрыша и есть доступные шаги
     if (player === 1 && !win && !noSteps) {
       // Через задержку выполняем aiStep
-      setTimeout(aiStep, Math.random() * 1000 + 500);
+      setTimeout(aiStep, Math.random() * 500 + 500);
     }
   });
 </script>
@@ -98,12 +103,22 @@
   {#each map as val, i}
     <div
       class="item"
-      on:mousedown={() => select(i)}
+      on:mousedown={(e) => !e.button && select(i)}
       data-win={win?.includes(i)}
       data-val={val}
     />
   {/each}
 </div>
+
+<!-- Кнопка выбора первого игрока -->
+<button
+  on:mousedown={() => {
+    fPlayer = +!fPlayer;
+    reset();
+  }}
+>
+  Первый - {names[fPlayer]}
+</button>
 
 <!-- Кнопка перезагрузки -->
 <button on:mousedown={reset}>Перезапуск</button>
