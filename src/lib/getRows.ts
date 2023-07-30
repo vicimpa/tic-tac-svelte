@@ -12,6 +12,6 @@ export function getRows(map: Uint8Array, player: number, count: number) {
       if (!map[c]) cn++;
     }
 
-    return cv === count && cn;
+    return cv === count && row.length - count === cn;
   });
 }
