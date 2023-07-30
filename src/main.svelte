@@ -25,7 +25,9 @@
   // Функция хода ИИ
   function aiStep() {
     // В 70 процентах случаев, если центр свободен, ходим туда
-    if (!map[4] && Math.random() < 0.7) return select(4, 1);
+    if (!map[4] && Math.random() < 0.7) {
+      return select(4, 1);
+    }
 
     const row = (
       getRows(map, 2, 2) ?? // Вышиграшная строка, или
