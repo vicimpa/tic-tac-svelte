@@ -4,6 +4,13 @@ import paths from "vite-tsconfig-paths";
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  root: './src',
   base: './',
-  plugins: [svelte(), paths()],
+  build: {
+    outDir: '../dist'
+  },
+  plugins: [
+    svelte({ configFile: '../svelte.config.js' }),
+    paths()
+  ],
 });

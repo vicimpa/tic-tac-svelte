@@ -21,7 +21,8 @@
       "DOM.Iterable"
     ],
     "types": [
-      "vite/client"
+      "vite/client",
+      "svelte"
     ]
   },
   "include": [
